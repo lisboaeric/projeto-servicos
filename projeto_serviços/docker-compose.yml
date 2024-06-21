@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  user-service:
+    build: ./user_service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./user_service/user_db.sqlite:/app/user_db.sqlite
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      interval: 30s
+      retries: 3
+
+  product-service:
+    build: ./product_service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./product_service/product_db.sqlite:/app/product_db.sqlite
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/"]
+      interval: 30s
+      retries: 3
+
+  consumer-client:
+    build: ./consumer_client
+    ports:
+      - "8000:8000"
+    command: ["python", "client.py"]
+    stdin_open: true 
+    depends_on:
+      - user-service
+      - product-service
